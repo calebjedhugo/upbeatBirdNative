@@ -55,38 +55,9 @@ export default StyleSheet.create({
       position: 'absolute',
       zIndex: 1,
   },
-  bpmLabel: {
-      right: 0,
-      width: '60%', /*The normal trick wasnt working. I don't know why.*/
-      marginTop: '4%',
-  },
-  scoreLabel: {
-      right: '1.5%',
-  },
   upperMidMenu: {
     top: '15%',
     width: '85%',
-  },
-  highScoreLabel: {
-      // whiteSpace: 'nowrap',
-  },
-  jumpMeter: {
-      borderWidth: 1,
-      borderStyle: 'solid',
-      borderColor: 'black',
-      backgroundColor: 'red',
-      // whiteSpace: 'nowrap',
-      transform: [{rotate: '180deg'}],
-      // clip: 'rect(auto, auto, auto, auto)',
-      left: '1%',
-      width: '5%',
-      fontSize: windowHeight / 41,
-      bottom: 0
-  },
-  jumpMeterText: {
-      transform: [{rotate: '90deg'}],
-      position: 'relative',
-      top: 5,
   },
   gameFallingText: {
       position: 'absolute',
@@ -134,7 +105,6 @@ export default StyleSheet.create({
       opacity: .8,
   },
   modemenu: {
-      textAlign: 'center',
       backgroundColor: '#fff5ee',
       borderColor: '#A9A9A9',
       borderRadius: 20,

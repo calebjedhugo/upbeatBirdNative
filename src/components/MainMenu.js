@@ -47,7 +47,6 @@ export default class MainMenu extends Component {
         <View>
           <NewGameButton inGameScreen={inGameScreen} beefBorderWidth={beefBorderWidth}/>
           <Text onPress={statsScreen}
-              className="menuElement switchScreenButton"
               style={[{borderWidth: beefBorderWidth}, styles.menuElement, styles.switchScreenButton]}>{'Stats'}
           </Text>
         </View>

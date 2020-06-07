@@ -5,7 +5,6 @@ export default class SoundLogic{
       this.storage = new LocalStorageManager()
 
       //Initialize some properties.
-      this.bassNote = 5;
       this.birdNote = 6;
       this.modes = {"ionian": 0, "dorian": 1,"phygian": 2, "lydian": 3,
                   "mixolydian": 4, "aeolian": 5, "locian": 6};
@@ -23,63 +22,6 @@ export default class SoundLogic{
       this.perfect.history = await this.storage.history
     }
 
-    //6 starts ionian
-    bassLogic = () => {
-        //translate the last not played to a scale degree
-        let bassNote = this.bassNote;
-        let currentScaleDegree = ((bassNote + 1 + this.offset)  % 7) + 1
-        let newScaleDegree;
-        let randomItem = this.randomItem;
-        switch(currentScaleDegree){
-            case 1:
-                newScaleDegree = randomItem([1,2,3,4,5,6,7]);
-                break;
-            case 2:
-                newScaleDegree = randomItem([4,5,6]);
-                break;
-            case 3:
-                newScaleDegree = randomItem([1,5,7]);
-                break;
-            case 4:
-                newScaleDegree = randomItem([2,5,6]);
-                break;
-            case 5:
-                newScaleDegree = randomItem([1,7,2]);
-                break;
-            case 6:
-                newScaleDegree = randomItem([1,2,3,4,5,7]);
-                break;
-            case 7:
-                newScaleDegree = randomItem([1,2,5,6]);
-                break;
-            default:
-                newScaleDegree = randomItem([1,2,3,4,5,6,7]);
-                break;
-        }
-
-        var changeAmounts = [newScaleDegree - currentScaleDegree,
-                            newScaleDegree - currentScaleDegree + 7,
-                            newScaleDegree - currentScaleDegree - 7];
-        var finalAmount
-
-        //find the shortest distance without simply making the number positive!
-        //(I bet there's a better way to do this, I'm just not seeing it right now)
-        if(Math.min(Math.abs(changeAmounts[0]), Math.abs(changeAmounts[1])) === Math.abs(changeAmounts[0]))
-            finalAmount = changeAmounts[0]
-        else
-            finalAmount = changeAmounts[1]
-
-        if(Math.min(Math.abs(finalAmount), Math.abs(changeAmounts[2])) === Math.abs(changeAmounts[2]))
-            finalAmount = changeAmounts[2];
-
-        bassNote += finalAmount;
-
-        //make sure we're within the range of the instrument.
-        if(bassNote < 1) bassNote += randomItem([7,14]);
-        else if(bassNote > 21) bassNote -= randomItem([7,14]);
-        return "bass" + bassNote;
-    }
-
     birdLogic = () => {
         let birdNote = this.birdNote;
         birdNote += this.randomItem([-2, -1, 0, 1, 2])
@@ -89,54 +31,7 @@ export default class SoundLogic{
         return "bird" + birdNote;
     }
 
-    drumLogic = () => {
-        let ratios = birdMotion.ratios;
-        let drumTracking = this.drumTracking;
-        let jumpMeterDom = birdMotion.jumpMeterDom;
-        switch(sessionsAndMenus.options.mode){
-            case "straight":
-                if(ratios.jumpPerc >= 0.5 && drumTracking.drum16thbeat){
-                    drumTracking.drum16thbeat = false;
-                    return "drum16thbeat";
-                }
-                else if(ratios.jumpPerc <= 0.5 && !drumTracking.drum16thbeat){
-                    drumTracking.drum16thbeat = true;
-                    return "drum16thbeat";
-                }
-                break;
-            case "triplets":
-                if(ratios.jumpPerc >= 2/3 && drumTracking.drum16thbeat){
-                    drumTracking.drum16thbeat = false;
-                    return "drumupbeat";
-                }
-                else if(ratios.jumpPerc <= 2/3 && !drumTracking.drum16thbeat){
-                    drumTracking.drum16thbeat = true;
-                    return "drum16thbeat";
-                }
-                break;
-            case "swing":
-                if(ratios.jumpPerc >= 2/3 && drumTracking.drum16thbeat){
-                    drumTracking.drum16thbeat = false;
-                    return "drumupbeat";
-                }
-                else if(ratios.jumpPerc <= 1/3 && !drumTracking.drum16thbeat){
-                    drumTracking.drum16thbeat = true;
-                    return "drum16thbeat";
-                }
-                break;
-            default:
-                console.log("\"" + sessionsAndMenus.options.mode + "\" is not a valid option." )
-        }
-        if(ratios.jumpPerc > jumpMeterDom.lastJumpPerc && !jumpMeterDom.direction){ //Then we are at the bottom
-            birdMotion.setJumpMeterDomDirection(true);
-            return "drumdownbeat"; //no exceptions
-        }
-        if(ratios.jumpPerc < jumpMeterDom.lastJumpPerc && jumpMeterDom.direction){
-            //Then we are at the top
-            birdMotion.setJumpMeterDomDirection(false)
-            if(sessionsAndMenus.options.mode !== "triplets") return "drumupbeat"; //only exception
-        }
-    }
+    
 
     perfect = {
         upbeat: function(){

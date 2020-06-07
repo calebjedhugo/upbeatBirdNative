@@ -2,10 +2,15 @@ import React, {Component} from 'react'
 import {Text, View, Dimensions, Image, Button, ImageBackground} from 'react-native'
 import LocalStorageManager from "./src/storage"
 import StatsTable from "./src/components/StatsTable"
-import SoundLogic from './src/soundLogic'
 import InGameUI from './src/components/InGameUI'
 import MainMenu from './src/components/MainMenu'
+import BassLogic from './src/soundLogic/bassLogic'
+import DrumLogic from './src/soundLogic/drumLogic'
 import styles from './src/styles.js'
+
+import {Audio} from 'expo-av'
+Audio.setAudioModeAsync({playsInSilentModeIOS: true})
+Sound.setCategory('Playback');
 
 const windowHeight = Dimensions.get('window').height
 const windowWidth = Dimensions.get('window').width
@@ -14,19 +19,26 @@ export default class App extends Component {
   constructor(props){
     super(props);
     this.storage = new LocalStorageManager()
-    this.soundLogic = new SoundLogic()
     this.state = {
       practice: false,
       difficulty: 'easy',
       mode: 'straight',
       screen: 'menu'
     }
+    this.bass = new BassLogic()
+    this.drum = new DrumLogic({mode: 'straight'})
     this.switchScreenTimeout = undefined;
     this.waitCount = 0;
   }
 
-  initFromStorage = async () => {
+  componentDidUpdate(prevProps){
+    const {mode} = this.state
+    if(prevProps.mode !== mode){
+      this.drum = new DrumLogic({mode: mode})
+    }
+  }
 
+  initFromStorage = async () => {
     //Load last selected mode.
     let mode = await this.storage.mode
     mode = mode || 'straight'
@@ -113,6 +125,11 @@ export default class App extends Component {
       else return 'Try Again';
   }
 
+  inGameScreen = async () => {
+    await this.bass.ready()
+    this.setState({screen: 'inGame'})
+  }
+
   render() {
     const {mode, highScoreLabelText, cyberBirdClip, birdDiameter, inGameDisplay, scoreLabel2Class, dataFontSize, difficulty, menuFontSize, tableFontSize, screen} = this.state;
     const beefBorderWidth = 3
@@ -132,7 +149,7 @@ export default class App extends Component {
             <MainMenu
               {...this.state}
               statsScreen={() => this.setState({screen: 'stats'})}
-              inGameScreen={() => {this.setState({screen: 'inGame'})}}
+              inGameScreen={this.inGameScreen}
               setDifficulty={this.setDifficulty}
               setMode={this.setMode}
               titleColor={this.titleColor}
@@ -141,8 +158,7 @@ export default class App extends Component {
             /> : null}
           {screen === 'stats' ? <View nativeId="stats" className="centered" style={[styles.absoluteInFront, styles.upperMidMenu, {fontSize: menuFontSize,
                                                       opacity: statsMenuOpacity}, {transition: 'opacity 1s'}]}>
-              <Text className="gameMenuTitle"
-                  style={{fontSize: windowHeight / 12, color: this.titleColor}}>Upbeat Stats</Text>
+              <Text style={{fontSize: windowHeight / 12, color: this.titleColor}}>Upbeat Stats</Text>
               <StatsTable soundLogic={this.soundLogic} difficulty={difficulty}
                           beefBorderWidth={beefBorderWidth}
                           leanBorderWidth={leanBorderWidth}
@@ -159,7 +175,12 @@ export default class App extends Component {
               </Button>
           </View> : null}
           {screen === 'inGame' ?
-            <InGameUI titleColor={this.titleColor} statsScreen={() => this.setState({screen: 'stats'})} {...this.state} /> :
+            <InGameUI
+              titleColor={this.titleColor}
+              statsScreen={() => this.setState({screen: 'stats'})}
+              {...this.state}
+              bass={this.bass}
+              drum={this.drum} /> :
             null}
         </ImageBackground>
       </View>
